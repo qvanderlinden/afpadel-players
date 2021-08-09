@@ -8,7 +8,6 @@ import {
 import Player from './Player'
 
 const getTable = async (page: puppeteer.Page) => {
-    await page.waitForTimeout(3000)
     await page.waitForSelector(RANKINGS_TABLE_SELECTOR)
     const table = await page.$(RANKINGS_TABLE_SELECTOR)
     if (!table) {
