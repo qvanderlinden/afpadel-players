@@ -2,12 +2,14 @@ import puppeteer from 'puppeteer'
 
 import {
     NEXT_PAGE_BUTTON_SELECTOR,
-    NEXT_PAGES_BUTTON_SELECTOR,
+    PAGES_DIV,
     RANKINGS_TABLE_SELECTOR
 } from './constants'
 import Player from './Player'
 
 const getTable = async (page: puppeteer.Page) => {
+    await page.waitForTimeout(3000)
+    await page.waitForSelector(RANKINGS_TABLE_SELECTOR)
     const table = await page.$(RANKINGS_TABLE_SELECTOR)
     if (!table) {
         throw new Error(`Couldn't get the player rankings table`)
@@ -27,27 +29,44 @@ const parse = async (page: puppeteer.Page) => {
     const headerItems = await getAllElementHandlesInnerText(headerItemsEH)
     const columns = headerItems.map(el => el.trim())
 
+    let processedTablePageIndex = 0
     let stop = false
-    let pageCount = 0
     const allPlayers: Player[] = []
     while (!stop) {
-        const table = await getTable(page)
-        const playersEH = await table.$x('./tbody/tr')
-        const pagePlayerProperties = await Promise.all(playersEH.map(async (playerEH) => {
-            const playerPropertiesEH = await playerEH.$x('./td')
-            const playerProperties = await getAllElementHandlesInnerText(playerPropertiesEH)
-            return playerProperties
-        }))
-        const pagePlayers = pagePlayerProperties.map(pp => new Player(columns, pp))
-        allPlayers.push(...pagePlayers)
+        await page.waitForSelector(PAGES_DIV)
+        const tablePageElementHandles = await page.$$(PAGES_DIV)
+        let currentPageIndex = 0;
+        for (const tablePageElementHandle of tablePageElementHandles) {
+            const classNameJSHandle = await tablePageElementHandle.getProperty('className')
+            const className = await classNameJSHandle?.jsonValue()
+            if (className === 'rgCurrentPage') {
+                const currentPageIndexStr = await tablePageElementHandle.evaluate(div => div.innerText)
+                currentPageIndex = parseInt(currentPageIndexStr, 10)
+                break
+            }
+        }
+        
+        if (currentPageIndex > processedTablePageIndex) {
+            const table = await getTable(page)
+            const playersEH = await table.$x('./tbody/tr')
+            const pagePlayerProperties = await Promise.all(playersEH.map(async (playerEH) => {
+                const playerPropertiesEH = await playerEH.$x('./td')
+                const playerProperties = await getAllElementHandlesInnerText(playerPropertiesEH)
+                return playerProperties
+            }))
+            const pagePlayers = pagePlayerProperties.map(pp => new Player(columns, pp))
+            allPlayers.push(...pagePlayers)
 
-        pageCount++
-        console.log('%d pages scraped', pageCount)
-
-        stop = await page.$(NEXT_PAGES_BUTTON_SELECTOR) === null
-        if (!stop) {
-            await page.click(NEXT_PAGE_BUTTON_SELECTOR)
-            await page.waitForTimeout(1000)
+            processedTablePageIndex = currentPageIndex
+            console.log('%d pages scraped', processedTablePageIndex)
+            
+            const lastTablePageElementHandle = tablePageElementHandles[tablePageElementHandles.length - 1]
+            const lastTablePageClassNameJSHandle = await lastTablePageElementHandle.getProperty('className')
+            const lastTablePageClassName = await lastTablePageClassNameJSHandle?.jsonValue()
+            stop = lastTablePageClassName === 'rgCurrentPage'
+            if (!stop) {
+                await page.click(NEXT_PAGE_BUTTON_SELECTOR)
+            }
         }
     }
 

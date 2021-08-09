@@ -19,10 +19,15 @@ const scrape = async () => {
   });
   const page = await browser.newPage();
   await page.goto(AFPADEL_URL);
+  
+  await page.waitForTimeout(3000)
+  await page.waitForSelector(RANKINGS_BUTTON_SELECTOR)
   await page.click(RANKINGS_BUTTON_SELECTOR)
-  await page.waitForTimeout(1000)
+  
+  await page.waitForTimeout(3000)
+  await page.waitForSelector(MORE_MEN_BUTTON_SELECTOR)
   await page.click(MORE_MEN_BUTTON_SELECTOR)
-  await page.waitForTimeout(1000)
+  
   const players = await parse(page)
   saveToFile(players, OUTPUT_FILE)
 }
