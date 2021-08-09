@@ -10,6 +10,7 @@ import {
 } from './constants'
 import parse from './parseTable'
 import saveToFile from './saveToFile'
+import { validate } from './validate'
 
 const scrape = async () => {
   const browser = await puppeteer.launch({
@@ -44,6 +45,10 @@ const scrapeRankings = async ({ browser, buttonId, outputFilename }: {
   const players = await parse(page)
   await page.close()
   saveToFile(players, outputFilename)
+
+  if (!validate(outputFilename)) {
+    throw new Error(`File ${outputFilename} did not pass validation`)
+  }
 }
 
 scrape()
