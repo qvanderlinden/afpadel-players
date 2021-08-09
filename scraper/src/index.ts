@@ -1,9 +1,12 @@
+import fs from "fs"
+
 import puppeteer from 'puppeteer'
 
 import {
   AFPADEL_URL,
   MORE_MEN_BUTTON_SELECTOR,
   MORE_WOMEN_BUTTON_SELECTOR,
+  OUTPUT_FOLDER,
   MEN_OUTPUT_FILE,
   WOMEN_OUTPUT_FILE,
   RANKINGS_BUTTON_SELECTOR,
@@ -13,6 +16,10 @@ import saveToFile from './saveToFile'
 import { validate } from './validate'
 
 const scrape = async () => {
+  if (!fs.existsSync(OUTPUT_FOLDER)) {
+    fs.mkdirSync(OUTPUT_FOLDER)
+  }
+
   const browser = await puppeteer.launch({
     defaultViewport: {
       width: 1600,
