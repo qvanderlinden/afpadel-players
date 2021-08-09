@@ -7,9 +7,11 @@ import {
   AFPADEL_URL,
   MORE_MEN_BUTTON_SELECTOR,
   MORE_WOMEN_BUTTON_SELECTOR,
+  MORE_MIXED_BUTTON_SELECTOR,
   OUTPUT_FOLDER,
   MEN_OUTPUT_FILE,
   WOMEN_OUTPUT_FILE,
+  MIXED_OUTPUT_FILE,
   RANKINGS_BUTTON_SELECTOR,
 } from './constants'
 import parse from './parseTable'
@@ -38,6 +40,11 @@ const scrape = async () => {
     browser,
     buttonId: MORE_WOMEN_BUTTON_SELECTOR,
     outputFilename: path.join(OUTPUT_FOLDER, WOMEN_OUTPUT_FILE)
+  })
+  await scrapeRankings({
+    browser,
+    buttonId: MORE_MIXED_BUTTON_SELECTOR,
+    outputFilename: path.join(OUTPUT_FOLDER, MIXED_OUTPUT_FILE)
   })
   await browser.close()
 }
