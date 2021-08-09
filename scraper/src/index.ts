@@ -1,4 +1,5 @@
 import fs from "fs"
+import path from "path"
 
 import puppeteer from 'puppeteer'
 
@@ -28,8 +29,16 @@ const scrape = async () => {
     headless: false
   });
   
-  await scrapeRankings({ browser, buttonId: MORE_MEN_BUTTON_SELECTOR, outputFilename: MEN_OUTPUT_FILE })
-  await scrapeRankings({ browser, buttonId: MORE_WOMEN_BUTTON_SELECTOR, outputFilename: WOMEN_OUTPUT_FILE })
+  await scrapeRankings({ 
+    browser, 
+    buttonId: MORE_MEN_BUTTON_SELECTOR,
+    outputFilename: path.join(OUTPUT_FOLDER, MEN_OUTPUT_FILE)
+  })
+  await scrapeRankings({
+    browser,
+    buttonId: MORE_WOMEN_BUTTON_SELECTOR,
+    outputFilename: path.join(OUTPUT_FOLDER, WOMEN_OUTPUT_FILE)
+  })
   await browser.close()
 }
 
