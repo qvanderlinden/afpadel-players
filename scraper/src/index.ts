@@ -29,7 +29,7 @@ const scrape = async () => {
   await page.click(MORE_MEN_BUTTON_SELECTOR)
   
   const players = await parse(page)
-  // saveToFile(players, OUTPUT_FILE)
+  saveToFile(players, OUTPUT_FILE)
 }
 
 scrape()
