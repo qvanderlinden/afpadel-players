@@ -35,18 +35,17 @@ const parse = async (page: puppeteer.Page) => {
     while (!stop) {
         await page.waitForSelector(PAGES_DIV)
         const tablePageElementHandles = await page.$$(PAGES_DIV)
-        let currentPageIndex
+        let currentPageIndex = 0;
         for (const tablePageElementHandle of tablePageElementHandles) {
             const classNameJSHandle = await tablePageElementHandle.getProperty('className')
             const className = await classNameJSHandle?.jsonValue()
             if (className === 'rgCurrentPage') {
-                currentPageIndex = await tablePageElementHandle.evaluate(div => div.innerText)
+                const currentPageIndexStr = await tablePageElementHandle.evaluate(div => div.innerText)
+                currentPageIndex = parseInt(currentPageIndexStr, 10)
                 break
             }
         }
         
-        console.log(currentPageIndex)
-
         if (currentPageIndex > processedTablePageIndex) {
             const table = await getTable(page)
             const playersEH = await table.$x('./tbody/tr')
