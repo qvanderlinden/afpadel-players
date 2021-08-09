@@ -3,7 +3,9 @@ import puppeteer from 'puppeteer'
 import {
   AFPADEL_URL,
   MORE_MEN_BUTTON_SELECTOR,
-  OUTPUT_FILE,
+  MORE_WOMEN_BUTTON_SELECTOR,
+  MEN_OUTPUT_FILE,
+  WOMEN_OUTPUT_FILE,
   RANKINGS_BUTTON_SELECTOR,
 } from './constants'
 import parse from './parseTable'
@@ -17,6 +19,17 @@ const scrape = async () => {
     },
     headless: false
   });
+  
+  await scrapeRankings({ browser, buttonId: MORE_MEN_BUTTON_SELECTOR, outputFilename: MEN_OUTPUT_FILE })
+  await scrapeRankings({ browser, buttonId: MORE_WOMEN_BUTTON_SELECTOR, outputFilename: WOMEN_OUTPUT_FILE })
+  await browser.close()
+}
+
+const scrapeRankings = async ({ browser, buttonId, outputFilename }: {
+  browser: puppeteer.Browser,
+  buttonId: string,
+  outputFilename: string
+}) => {
   const page = await browser.newPage();
   await page.goto(AFPADEL_URL);
   
@@ -25,11 +38,12 @@ const scrape = async () => {
   await page.click(RANKINGS_BUTTON_SELECTOR)
   
   await page.waitForTimeout(3000)
-  await page.waitForSelector(MORE_MEN_BUTTON_SELECTOR)
-  await page.click(MORE_MEN_BUTTON_SELECTOR)
+  await page.waitForSelector(buttonId)
+  await page.click(buttonId)
   
   const players = await parse(page)
-  saveToFile(players, OUTPUT_FILE)
+  await page.close()
+  saveToFile(players, outputFilename)
 }
 
 scrape()
